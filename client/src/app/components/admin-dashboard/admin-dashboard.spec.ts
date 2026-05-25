@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AdminDashboardComponent } from './admin-dashboard';
 import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
 
 describe('AdminDashboardComponent', () => {
   let component: AdminDashboardComponent;
@@ -10,7 +12,9 @@ describe('AdminDashboardComponent', () => {
     await TestBed.configureTestingModule({
       imports: [AdminDashboardComponent],
       providers: [
-        provideRouter([])
+        provideRouter([]),
+        provideHttpClient(),
+        provideHttpClientTesting()
       ]
     }).compileComponents();
 

@@ -4,6 +4,7 @@ import * as path from 'path';
 export default defineConfig({
   test: {
     include: ['src/**/*.spec.ts'],
+    globals: true,
   },
   plugins: [
     {
