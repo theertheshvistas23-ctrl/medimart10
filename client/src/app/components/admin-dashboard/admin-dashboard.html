@@ -1,0 +1,91 @@
+<div class="dashboard">
+
+  <div class="navbar">
+    Admin Dashboard
+  </div>
+
+  <div class="card">
+
+    <h2>
+      Welcome Admin
+    </h2>
+
+    <button
+      class="btn"
+      routerLink="/medicine-management">
+
+      Manage Medicines
+
+    </button>
+
+  </div>
+
+  <div class="card mt-4 p-3 shadow">
+
+    <h3 class="mb-3">
+      Pending Cashier Approvals
+    </h3>
+
+    <div *ngIf="pendingCashiers.length === 0">
+
+      No pending cashiers
+
+    </div>
+
+    <table
+      class="table table-bordered"
+      *ngIf="pendingCashiers.length > 0">
+
+      <thead>
+
+        <tr>
+
+          <th>Username</th>
+
+          <th>Email</th>
+
+          <th>Phone</th>
+
+          <th>Action</th>
+
+        </tr>
+
+      </thead>
+
+      <tbody>
+
+        <tr *ngFor="let cashier of pendingCashiers">
+
+          <td>
+            {{ cashier.username }}
+          </td>
+
+          <td>
+            {{ cashier.email }}
+          </td>
+
+          <td>
+            {{ cashier.phoneNumber }}
+          </td>
+
+          <td>
+
+            <button
+              class="btn btn-success btn-sm"
+              (click)="approveCashier(cashier.id)">
+
+              Approve
+
+            </button>
+
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>

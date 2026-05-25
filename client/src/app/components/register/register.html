@@ -1,0 +1,108 @@
+<div class="container mt-5">
+
+  <div class="row justify-content-center">
+
+    <div class="col-md-6">
+
+      <div class="card p-4 shadow">
+
+        <h2 class="text-center mb-4">
+          Register
+        </h2>
+
+        <input
+          type="text"
+          class="form-control mb-3"
+          placeholder="Username"
+          [(ngModel)]="formData.username"
+          name="username"
+        />
+
+        <input
+          type="email"
+          class="form-control mb-3"
+          placeholder="Email"
+          [(ngModel)]="formData.email"
+          name="email"
+        />
+
+        <input
+          type="text"
+          class="form-control mb-3"
+          placeholder="Phone Number"
+          [(ngModel)]="formData.phoneNumber"
+          name="phoneNumber"
+        />
+
+        <input
+          type="password"
+          class="form-control mb-3"
+          placeholder="Password"
+          [(ngModel)]="formData.password"
+          name="password"
+        />
+
+        <input
+          type="password"
+          class="form-control mb-3"
+          placeholder="Confirm Password"
+          [(ngModel)]="formData.confirmPassword"
+          name="confirmPassword"
+        />
+
+        <select
+          class="form-control mb-3"
+          [(ngModel)]="formData.role"
+          name="role">
+
+          <option
+            *ngFor="let role of roles"
+            [value]="role">
+
+            {{ role }}
+
+          </option>
+
+        </select>
+
+        <button
+          class="btn btn-primary w-100"
+          (click)="register()">
+
+          Register
+
+        </button>
+
+        <div class="text-center mt-3">
+
+          Already have account?
+
+          <a routerLink="/login">
+            Login
+          </a>
+
+        </div>
+
+        <p
+  class="text-center mt-3"
+  [ngClass]="{
+    'text-danger': errorMessage.includes('Failed') ||
+                    errorMessage.includes('required') ||
+                    errorMessage.includes('exists') ||
+                    errorMessage.includes('match'),
+
+    'text-success': errorMessage.includes('successful')
+  }"
+  *ngIf="errorMessage">
+
+  {{ errorMessage }}
+
+</p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

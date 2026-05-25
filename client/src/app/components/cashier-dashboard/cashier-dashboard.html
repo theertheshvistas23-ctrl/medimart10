@@ -1,0 +1,31 @@
+<div class="container mt-5">
+
+    <h2>Cashier Dashboard</h2>
+
+    <table class="table table-bordered">
+
+        <thead>
+
+            <tr>
+                <th>Name</th>
+                <th>Price</th>
+                <th>Stock</th>
+            </tr>
+
+        </thead>
+
+        <tbody>
+
+            <tr *ngFor="let m of medicines">
+
+                <td>{{m.name}}</td>
+                <td>{{m.price}}</td>
+                <td>{{m.quantity}}</td>
+
+            </tr>
+
+        </tbody>
+
+    </table>
+
+</div>

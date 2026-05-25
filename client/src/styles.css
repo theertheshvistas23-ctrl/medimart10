@@ -1,1 +1,118 @@
 /* You can add global styles to this file, and also import other style files */
+/* GLOBAL STYLES */
+
+body{
+  margin:0;
+  padding:0;
+  font-family: Arial, Helvetica, sans-serif;
+  background:#f4f6f9;
+}
+
+.container{
+  width:400px;
+  margin:60px auto;
+  background:white;
+  padding:30px;
+  border-radius:10px;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+h1,h2,h3{
+  text-align:center;
+  color:#333;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  margin-bottom:15px;
+  border:1px solid #ccc;
+  border-radius:5px;
+  font-size:16px;
+  box-sizing:border-box;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  background:#1976d2;
+  color:white;
+  border:none;
+  border-radius:5px;
+  font-size:16px;
+  cursor:pointer;
+  transition:0.3s;
+}
+
+button:hover{
+  background:#1259a7;
+}
+
+.error{
+  color:red;
+  text-align:center;
+  margin-top:10px;
+}
+
+.success{
+  color:green;
+  text-align:center;
+  margin-top:10px;
+}
+
+.link-btn{
+  background:none;
+  border:none;
+  color:#1976d2;
+  cursor:pointer;
+  margin-top:10px;
+}
+
+.dashboard{
+  width:90%;
+  margin:auto;
+  margin-top:30px;
+}
+
+.card{
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  box-shadow:0 0 5px rgba(0,0,0,0.1);
+  margin-bottom:20px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:20px;
+  background:white;
+}
+
+table th{
+  background:#1976d2;
+  color:white;
+  padding:12px;
+}
+
+table td{
+  padding:10px;
+  border:1px solid #ddd;
+  text-align:center;
+}
+
+.navbar{
+  background:#1976d2;
+  color:white;
+  padding:15px;
+  font-size:20px;
+  font-weight:bold;
+}
+
+.logout-btn{
+  float:right;
+  width:auto;
+  padding:8px 15px;
+  background:red;
+}

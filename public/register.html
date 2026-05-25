@@ -1,0 +1,170 @@
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicart - Operator Registry</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        };
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'system';
+            applyTheme(theme);
+        }
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            let isDark = false;
+            if (theme === 'system') {
+                isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } else {
+                isDark = theme === 'dark';
+            }
+            if (isDark) {
+                root.classList.add('dark');
+            } else {
+                root.classList.remove('dark');
+            }
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (localStorage.getItem('theme') === 'system' || !localStorage.getItem('theme')) {
+                applyTheme('system');
+            }
+        });
+        initTheme();
+    </script>
+    <style>
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 30px -5px rgba(148, 163, 184, 0.15), 0 4px 12px -2px rgba(148, 163, 184, 0.08);
+            transition: background-color 300ms, border-color 300ms, box-shadow 300ms;
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.08);
+            border-color: rgba(6, 182, 212, 0.2);
+        }
+        .dark .glow-cyan {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.15);
+            border-color: rgba(6, 182, 212, 0.25);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-100 via-sky-50 to-blue-100/70 text-slate-800 dark:from-[#020617] dark:via-[#090d22] dark:to-[#020617] dark:text-slate-100 min-h-screen flex items-center justify-center py-10 px-6 relative overflow-x-hidden transition-all duration-500">
+
+    <!-- Decorative background blobs -->
+    <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-[130px] pointer-events-none animate-pulse"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-[130px] pointer-events-none animate-pulse"></div>
+
+    <div class="glass-panel p-8 rounded-3xl w-full max-w-md relative overflow-hidden z-10 glow-cyan">
+        <div class="absolute -top-px left-10 right-10 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+        
+        <div class="text-center mb-6">
+            <div class="inline-flex h-12 w-12 rounded-2xl bg-gradient-to-tr from-blue-500 to-cyan-400 items-center justify-center shadow-lg shadow-blue-500/20 mb-3">
+                <span class="text-2xl">🧬</span>
+            </div>
+            <h2 class="text-2xl font-black bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-400 dark:to-cyan-400 bg-clip-text text-transparent">Operator Registry</h2>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 font-semibold uppercase tracking-wider">Initialize System Credentials</p>
+        </div>
+
+        <div id="message" class="hidden p-3 rounded-xl mb-4 text-xs font-semibold"></div>
+        
+        <form id="registerForm" class="space-y-4">
+            <div>
+                <label class="block text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">Username</label>
+                <input type="text" id="username" class="w-full px-4 py-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all font-medium" placeholder="e.g. johndoe" required>
+            </div>
+            <div>
+                <label class="block text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">Email Address</label>
+                <input type="email" id="email" class="w-full px-4 py-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all font-medium" placeholder="e.g. john@example.com" required>
+            </div>
+            <div>
+                <label class="block text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">Phone Number</label>
+                <input type="tel" id="phoneNumber" class="w-full px-4 py-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all font-medium" placeholder="e.g. +31612345678" required>
+            </div>
+            <div>
+                <label class="block text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">Password</label>
+                <input type="password" id="password" class="w-full px-4 py-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all font-medium" placeholder="••••••••" required>
+            </div>
+            <div>
+                <label class="block text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">Confirm Password</label>
+                <input type="password" id="confirmPassword" class="w-full px-4 py-2 bg-white dark:bg-slate-950/40 border border-slate-200 dark:border-white/5 rounded-xl text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all font-medium" placeholder="••••••••" required>
+            </div>
+            <div>
+                <label class="block text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider mb-1.5">Access Role</label>
+                <select id="role" class="w-full px-4 py-2 bg-white dark:bg-slate-950/80 border border-slate-200 dark:border-white/5 rounded-xl text-slate-700 dark:text-slate-300 focus:outline-none focus:border-cyan-500/50 focus:ring-4 focus:ring-cyan-500/10 transition-all font-semibold cursor-pointer" required>
+                    <option value="" disabled selected class="bg-white text-slate-400 dark:bg-[#020617] dark:text-slate-500">Select Role</option>
+                    <option value="customer" class="bg-white text-slate-800 dark:bg-[#020617] dark:text-slate-300">Customer Store Access</option>
+                    <option value="cashier" class="bg-white text-slate-800 dark:bg-[#020617] dark:text-slate-300">Cashier POS Access</option>
+                </select>
+            </div>
+            <button type="submit" class="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white font-extrabold text-sm shadow-lg shadow-blue-500/25 hover:shadow-cyan-500/25 hover:scale-[1.02] active:scale-[0.98] transition-all duration-300 uppercase tracking-widest mt-6">Register Profile</button>
+        </form>
+        <p class="mt-6 text-center text-xs font-semibold text-slate-500 dark:text-slate-400">Already registered? <a href="login.html" class="text-cyan-600 dark:text-cyan-400 hover:underline">Authorize Portal</a></p>
+    </div>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const role = document.getElementById('role').value;
+            const username = document.getElementById('username').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const phoneNumber = document.getElementById('phoneNumber').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const msgDiv = document.getElementById('message');
+
+            if (password !== confirmPassword) {
+                msgDiv.textContent = 'Passwords do not match.';
+                msgDiv.classList.remove('hidden', 'bg-green-100', 'text-green-700');
+                msgDiv.classList.add('bg-red-100', 'text-red-700');
+                return;
+            }
+
+            const endpoint = role === 'cashier' ? '/api/auth/register-cashier' : '/api/auth/register-customer';
+
+            try {
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, confirmPassword, phoneNumber, username })
+                });
+
+                const data = await res.json();
+                msgDiv.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+                
+                if (res.ok) {
+                    msgDiv.textContent = data.message + " Redirecting to login...";
+                    msgDiv.classList.add('bg-green-100', 'text-green-700');
+                    setTimeout(() => window.location.href = 'login.html', 2000);
+                } else {
+                    msgDiv.textContent = data.error;
+                    msgDiv.classList.add('bg-red-100', 'text-red-700');
+                }
+            } catch (err) {
+                msgDiv.textContent = 'Server error. Try again later.';
+                msgDiv.classList.remove('hidden');
+                msgDiv.classList.add('bg-red-100', 'text-red-700');
+            }
+        });
+    </script>
+</body>
+</html>

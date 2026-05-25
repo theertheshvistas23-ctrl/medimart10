@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicart - Pharmacy Hub</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+        }
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+        .glow-cyan-hover:hover {
+            box-shadow: 0 0 30px rgba(6, 182, 212, 0.25);
+            border-color: rgba(6, 182, 212, 0.4);
+        }
+        .glow-emerald-hover:hover {
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.25);
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+        .glow-indigo-hover:hover {
+            box-shadow: 0 0 30px rgba(99, 102, 241, 0.25);
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+        .glow-text-cyan {
+            text-shadow: 0 0 15px rgba(6, 182, 212, 0.5);
+        }
+        @keyframes float-slow {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+        .animate-blob-1 {
+            animation: float-slow 15s ease-in-out infinite;
+        }
+        .animate-blob-2 {
+            animation: float-slow 20s ease-in-out infinite;
+            animation-delay: 3s;
+        }
+    </style>
+</head>
+<body class="bg-[#020617] text-slate-100 min-h-screen flex flex-col justify-between overflow-x-hidden relative">
+    
+    <!-- Decorative animated background blobs -->
+    <div class="absolute top-[-10%] left-[10%] w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none animate-blob-1"></div>
+    <div class="absolute bottom-[10%] right-[10%] w-[500px] h-[500px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none animate-blob-2"></div>
+
+    <!-- Header Section -->
+    <header class="max-w-7xl mx-auto w-full px-6 py-6 flex justify-between items-center z-10">
+        <div class="flex items-center gap-3">
+            <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-blue-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-blue-500/20">
+                <span class="text-xl">🧬</span>
+            </div>
+            <div>
+                <h1 class="text-xl font-black tracking-wider bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">MEDICART</h1>
+                <p class="text-[9px] text-cyan-400 font-bold uppercase tracking-widest">AI Pharmacy Hub</p>
+            </div>
+        </div>
+        <div id="shopIndicator" class="flex items-center gap-2 px-4 py-2 rounded-full border border-white/5 bg-slate-950/45 backdrop-blur-xl shadow-lg">
+            <span class="relative flex h-3 w-3">
+                <span id="pulseDot" class="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"></span>
+                <span id="statusDot" class="relative inline-flex rounded-full h-3 w-3"></span>
+            </span>
+            <span id="statusText" class="text-[10px] font-extrabold uppercase tracking-wider text-slate-300">Loading...</span>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto w-full px-6 py-12 flex flex-col items-center text-center justify-center flex-grow z-10 space-y-12">
+        
+        <!-- Live Clock & Calendar (Futuristic HUD style) -->
+        <div class="relative p-6 md:p-8 rounded-3xl border border-white/5 bg-slate-950/30 backdrop-blur-xl shadow-inner max-w-md w-full">
+            <div class="absolute -top-px left-10 right-10 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent"></div>
+            <div class="space-y-1">
+                <div id="liveTime" class="text-4xl md:text-5xl font-black tracking-widest text-cyan-400 font-mono glow-text-cyan">
+                    00:00:00 PM
+                </div>
+                <div id="liveDate" class="text-xs md:text-sm font-extrabold text-slate-400 uppercase tracking-widest">
+                    Loading date...
+                </div>
+            </div>
+        </div>
+
+        <!-- Welcome Banner -->
+        <div class="space-y-4 max-w-xl">
+            <div class="inline-flex items-center gap-2 px-4 py-1.5 text-xs font-semibold rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                📍 Branch: <span id="shopLocationState" class="font-black uppercase tracking-wider">Loading...</span>
+            </div>
+            <h2 class="text-3xl md:text-5xl font-black tracking-tight text-white leading-tight">
+                Healthcare of the <span class="bg-gradient-to-r from-blue-400 via-cyan-400 to-emerald-400 bg-clip-text text-transparent">Future</span>
+            </h2>
+            <p class="text-sm md:text-base text-slate-400 font-medium leading-relaxed max-w-lg mx-auto">
+                Next-generation operations for pharmacy logs, lightning-fast cashier billing counter, and online medicine reservations.
+            </p>
+        </div>
+
+        <!-- Portal Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl pt-4">
+            <!-- Customer Store -->
+            <a href="login.html" class="group glass-panel p-6 rounded-3xl transition-all duration-500 flex flex-col items-center text-center space-y-4 hover:-translate-y-2 glow-cyan-hover relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-cyan-500/5 rounded-full blur-xl group-hover:bg-cyan-500/10 transition-colors"></div>
+                <div class="h-16 w-16 rounded-2xl bg-cyan-500/10 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-500">
+                    🛒
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-white text-lg group-hover:text-cyan-400 transition-colors">Customer Store</h3>
+                    <p class="text-xs text-slate-400 mt-2 font-medium">Browse stock and place online orders for verification</p>
+                </div>
+            </a>
+
+            <!-- Cashier POS -->
+            <a href="login.html" class="group glass-panel p-6 rounded-3xl transition-all duration-500 flex flex-col items-center text-center space-y-4 hover:-translate-y-2 glow-emerald-hover relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-colors"></div>
+                <div class="h-16 w-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-500">
+                    ⚡
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-white text-lg group-hover:text-emerald-400 transition-colors">Cashier POS</h3>
+                    <p class="text-xs text-slate-400 mt-2 font-medium">Quick billing counter and customer queue validation</p>
+                </div>
+            </a>
+
+            <!-- Admin Panel -->
+            <a href="login.html" class="group glass-panel p-6 rounded-3xl transition-all duration-500 flex flex-col items-center text-center space-y-4 hover:-translate-y-2 glow-indigo-hover relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl group-hover:bg-indigo-500/10 transition-colors"></div>
+                <div class="h-16 w-16 rounded-2xl bg-indigo-500/10 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-500">
+                    ⚙️
+                </div>
+                <div>
+                    <h3 class="font-extrabold text-white text-lg group-hover:text-indigo-400 transition-colors">Admin Panel</h3>
+                    <p class="text-xs text-slate-400 mt-2 font-medium">Manage inventories, approve cashiers, & view sales stats</p>
+                </div>
+            </a>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl mx-auto w-full px-6 py-6 text-center text-slate-500 text-xs border-t border-white/5 bg-slate-950/20 backdrop-blur-md z-10 font-medium">
+        &copy; 2026 Medicart Systems. Powered by high-speed neural cloud db.
+    </footer>
+
+    <script>
+        // Update Time & Date
+        function updateClock() {
+            const now = new Date();
+            
+            // Format time: HH:MM:SS AM/PM
+            let hours = now.getHours();
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12;
+            hours = hours ? hours : 12; // the hour '0' should be '12'
+            const formattedHours = String(hours).padStart(2, '0');
+            
+            document.getElementById('liveTime').innerText = `${formattedHours}:${minutes}:${seconds} ${ampm}`;
+
+            // Format date: DayName, Month DD, YYYY
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('liveDate').innerText = now.toLocaleDateString('en-IN', options);
+        }
+        setInterval(updateClock, 1000);
+        updateClock(); // Run immediately
+
+        // Load Shop Status & State settings
+        async function loadShopSettings() {
+            try {
+                const res = await fetch('/api/public-settings');
+                if (res.ok) {
+                    const settings = await res.json();
+                    
+                    // Set Location
+                    document.getElementById('shopLocationState').innerText = settings.shop_state || 'India';
+
+                    // Set Shop Indicator
+                    const statusText = document.getElementById('statusText');
+                    const statusDot = document.getElementById('statusDot');
+                    const pulseDot = document.getElementById('pulseDot');
+
+                    if (settings.shop_status === 'open') {
+                        statusText.innerText = 'SHOP OPEN';
+                        statusText.className = 'text-xs font-extrabold uppercase tracking-wider text-emerald-400';
+                        statusDot.className = 'relative inline-flex rounded-full h-3 w-3 bg-emerald-500';
+                        pulseDot.className = 'animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400';
+                    } else {
+                        statusText.innerText = 'SHOP CLOSED';
+                        statusText.className = 'text-xs font-extrabold uppercase tracking-wider text-rose-400';
+                        statusDot.className = 'relative inline-flex rounded-full h-3 w-3 bg-rose-500';
+                        pulseDot.className = 'animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-rose-400';
+                    }
+                }
+            } catch (err) {
+                console.error("Error fetching shop settings:", err);
+            }
+        }
+        loadShopSettings();
+    </script>
+
+    <!-- ========================================== -->
+    <!-- ADVANCED GUI OVERLAY HUD & ACCESSIBILITY SYSTEM -->
+    <!-- ========================================== -->
+    <style id="hudStyles">
+        /* High-End Fonts & Smoothness Overrides */
+        body {
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: background 400ms cubic-bezier(0.16, 1, 0.3, 1), color 400ms cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Light Mode CSS Overrides using specificity without altering original markup */
+        html:not(.dark) body {
+            background: linear-gradient(135deg, #f1f5f9 0%, #eff6ff 50%, #e2e8f0 100%) !important;
+            color: #1e293b !important;
+        }
+        html:not(.dark) header h1,
+        html:not(.dark) main h2 {
+            color: #0f172a !important;
+        }
+        html:not(.dark) header p {
+            color: #2563eb !important;
+        }
+        html:not(.dark) main p {
+            color: #475569 !important;
+        }
+        html:not(.dark) #shopIndicator {
+            background: rgba(255, 255, 255, 0.65) !important;
+            border-color: rgba(226, 232, 240, 0.8) !important;
+            box-shadow: 0 4px 20px rgba(148, 163, 184, 0.08) !important;
+        }
+        html:not(.dark) #shopIndicator span#statusText {
+            color: #334155 !important;
+        }
+        html:not(.dark) main h2 span {
+            background: linear-gradient(to right, #1d4ed8, #0369a1, #047857);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent !important;
+        }
+        html:not(.dark) .glass-panel {
+            background: rgba(255, 255, 255, 0.8) !important;
+            border: 1px solid rgba(226, 232, 240, 0.8) !important;
+            box-shadow: 0 10px 30px -5px rgba(148, 163, 184, 0.15), 0 4px 12px -2px rgba(148, 163, 184, 0.08) !important;
+        }
+        html:not(.dark) .glass-panel h3 {
+            color: #0f172a !important;
+        }
+        html:not(.dark) .glass-panel p {
+            color: #475569 !important;
+        }
+        html:not(.dark) main > div > div:first-child {
+            background: rgba(255, 255, 255, 0.5) !important;
+            border-color: rgba(226, 232, 240, 0.8) !important;
+            box-shadow: inset 0 2px 4px rgba(148, 163, 184, 0.05) !important;
+        }
+        html:not(.dark) footer {
+            background: rgba(255, 255, 255, 0.4) !important;
+            border-color: rgba(226, 232, 240, 0.5) !important;
+            color: #64748b !important;
+        }
+
+        /* Light Mode High-Contrast Hover Readability Fixes */
+        html:not(.dark) .glow-cyan-hover:hover h3 {
+            color: #0284c7 !important;
+        }
+        html:not(.dark) .glow-emerald-hover:hover h3 {
+            color: #059669 !important;
+        }
+        html:not(.dark) .glow-indigo-hover:hover h3 {
+            color: #4f46e5 !important;
+        }
+        html:not(.dark) .glow-cyan-hover:hover p,
+        html:not(.dark) .glow-emerald-hover:hover p,
+        html:not(.dark) .glow-indigo-hover:hover p {
+            color: #1e293b !important;
+        }
+
+        /* Extraordinary Theme Overrides */
+
+        /* Cyberpunk Glow Theme */
+        html.theme-cyberpunk body {
+            background: radial-gradient(circle at 50% 50%, #0c001a 0%, #020005 100%) !important;
+            color: #d8b4fe !important;
+        }
+        html.theme-cyberpunk header h1,
+        html.theme-cyberpunk main h2 {
+            color: #ffffff !important;
+        }
+        html.theme-cyberpunk header p {
+            color: #f43f5e !important;
+        }
+        html.theme-cyberpunk main p {
+            color: #c084fc !important;
+        }
+        html.theme-cyberpunk main h2 span {
+            background: linear-gradient(to right, #f43f5e, #d946ef, #a855f7) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            color: transparent !important;
+        }
+        html.theme-cyberpunk .glass-panel {
+            background: rgba(12, 0, 26, 0.6) !important;
+            border: 1px solid rgba(217, 70, 239, 0.2) !important;
+            box-shadow: 0 0 25px rgba(217, 70, 239, 0.15), inset 0 0 15px rgba(217, 70, 239, 0.05) !important;
+        }
+        html.theme-cyberpunk .glass-panel h3 {
+            color: #f5d0fe !important;
+        }
+        html.theme-cyberpunk .glass-panel p {
+            color: #c084fc !important;
+        }
+        html.theme-cyberpunk .glow-cyan-hover:hover {
+            box-shadow: 0 0 35px rgba(244, 63, 94, 0.4) !important;
+            border-color: rgba(244, 63, 94, 0.6) !important;
+        }
+        html.theme-cyberpunk .glow-cyan-hover:hover h3 {
+            color: #f43f5e !important;
+        }
+        html.theme-cyberpunk .glow-emerald-hover:hover {
+            box-shadow: 0 0 35px rgba(217, 70, 239, 0.4) !important;
+            border-color: rgba(217, 70, 239, 0.6) !important;
+        }
+        html.theme-cyberpunk .glow-emerald-hover:hover h3 {
+            color: #d946ef !important;
+        }
+        html.theme-cyberpunk .glow-indigo-hover:hover {
+            box-shadow: 0 0 35px rgba(168, 85, 247, 0.4) !important;
+            border-color: rgba(168, 85, 247, 0.6) !important;
+        }
+        html.theme-cyberpunk .glow-indigo-hover:hover h3 {
+            color: #a855f7 !important;
+        }
+        html.theme-cyberpunk #liveTime {
+            color: #f43f5e !important;
+            text-shadow: 0 0 15px rgba(244, 63, 94, 0.6) !important;
+        }
+        html.theme-cyberpunk #liveDate {
+            color: #d946ef !important;
+        }
+        html.theme-cyberpunk footer {
+            background: rgba(12, 0, 26, 0.4) !important;
+            border-color: rgba(217, 70, 239, 0.1) !important;
+            color: #c084fc !important;
+        }
+
+        /* Mint Health Theme */
+        html.theme-mint body {
+            background: linear-gradient(135deg, #f0f7f4 0%, #e6f2ed 50%, #d8eae1 100%) !important;
+            color: #2f4f3f !important;
+        }
+        html.theme-mint header h1,
+        html.theme-mint main h2 {
+            color: #1e3529 !important;
+        }
+        html.theme-mint header p {
+            color: #059669 !important;
+        }
+        html.theme-mint main p {
+            color: #406b56 !important;
+        }
+        html.theme-mint main h2 span {
+            background: linear-gradient(to right, #059669, #0f766e, #15803d) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            color: transparent !important;
+        }
+        html.theme-mint .glass-panel {
+            background: rgba(255, 255, 255, 0.85) !important;
+            border: 1px solid rgba(167, 243, 208, 0.6) !important;
+            box-shadow: 0 10px 30px rgba(47, 79, 63, 0.08) !important;
+        }
+        html.theme-mint .glass-panel h3 {
+            color: #1e3529 !important;
+        }
+        html.theme-mint .glass-panel p {
+            color: #406b56 !important;
+        }
+        html.theme-mint .glow-cyan-hover:hover {
+            box-shadow: 0 0 30px rgba(5, 150, 105, 0.25) !important;
+            border-color: rgba(5, 150, 105, 0.5) !important;
+        }
+        html.theme-mint .glow-cyan-hover:hover h3 {
+            color: #059669 !important;
+        }
+        html.theme-mint .glow-emerald-hover:hover {
+            box-shadow: 0 0 30px rgba(15, 118, 110, 0.25) !important;
+            border-color: rgba(15, 118, 110, 0.5) !important;
+        }
+        html.theme-mint .glow-emerald-hover:hover h3 {
+            color: #0f766e !important;
+        }
+        html.theme-mint .glow-indigo-hover:hover {
+            box-shadow: 0 0 30px rgba(21, 128, 61, 0.25) !important;
+            border-color: rgba(21, 128, 61, 0.5) !important;
+        }
+        html.theme-mint .glow-indigo-hover:hover h3 {
+            color: #15803d !important;
+        }
+        html.theme-mint #liveTime {
+            color: #059669 !important;
+            text-shadow: 0 0 10px rgba(5, 150, 105, 0.15) !important;
+        }
+        html.theme-mint #liveDate {
+            color: #0f766e !important;
+        }
+        html.theme-mint footer {
+            background: rgba(255, 255, 255, 0.4) !important;
+            border-color: rgba(167, 243, 208, 0.3) !important;
+            color: #406b56 !important;
+        }
+
+        /* Royal Amethyst Theme */
+        html.theme-amethyst body {
+            background: radial-gradient(circle at 50% 50%, #15092a 0%, #080312 100%) !important;
+            color: #e9d5ff !important;
+        }
+        html.theme-amethyst header h1,
+        html.theme-amethyst main h2 {
+            color: #ffffff !important;
+        }
+        html.theme-amethyst header p {
+            color: #ca8a04 !important;
+        }
+        html.theme-amethyst main p {
+            color: #d8b4fe !important;
+        }
+        html.theme-amethyst main h2 span {
+            background: linear-gradient(to right, #d97706, #a855f7, #ca8a04) !important;
+            -webkit-background-clip: text !important;
+            background-clip: text !important;
+            color: transparent !important;
+        }
+        html.theme-amethyst .glass-panel {
+            background: rgba(21, 9, 42, 0.5) !important;
+            border: 1px solid rgba(217, 119, 6, 0.25) !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+        }
+        html.theme-amethyst .glass-panel h3 {
+            color: #f3e8ff !important;
+        }
+        html.theme-amethyst .glass-panel p {
+            color: #d8b4fe !important;
+        }
+        html.theme-amethyst .glow-cyan-hover:hover {
+            box-shadow: 0 0 35px rgba(217, 119, 6, 0.3) !important;
+            border-color: rgba(217, 119, 6, 0.5) !important;
+        }
+        html.theme-amethyst .glow-cyan-hover:hover h3 {
+            color: #fbbf24 !important;
+        }
+        html.theme-amethyst .glow-emerald-hover:hover {
+            box-shadow: 0 0 35px rgba(168, 85, 247, 0.3) !important;
+            border-color: rgba(168, 85, 247, 0.5) !important;
+        }
+        html.theme-amethyst .glow-emerald-hover:hover h3 {
+            color: #c084fc !important;
+        }
+        html.theme-amethyst .glow-indigo-hover:hover {
+            box-shadow: 0 0 35px rgba(202, 138, 4, 0.3) !important;
+            border-color: rgba(202, 138, 4, 0.5) !important;
+        }
+        html.theme-amethyst .glow-indigo-hover:hover h3 {
+            color: #eab308 !important;
+        }
+        html.theme-amethyst #liveTime {
+            color: #fbbf24 !important;
+            text-shadow: 0 0 15px rgba(251, 191, 36, 0.5) !important;
+        }
+        html.theme-amethyst #liveDate {
+            color: #c084fc !important;
+        }
+        html.theme-amethyst footer {
+            background: rgba(21, 9, 42, 0.4) !important;
+            border-color: rgba(217, 119, 6, 0.1) !important;
+            color: #d8b4fe !important;
+        }
+
+        /* Dynamic Visual Micro-Transitions */
+        .hud-transition {
+            transition: all 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Ultra-High Contrast Mode Styles */
+        body.high-contrast {
+            font-weight: 700 !important;
+        }
+        body.high-contrast * {
+            text-shadow: none !important;
+            box-shadow: none !important;
+            letter-spacing: 0.05em !important;
+        }
+        /* Light High Contrast */
+        html:not(.dark) body.high-contrast {
+            background: #ffffff !important;
+            color: #000000 !important;
+        }
+        html:not(.dark) body.high-contrast .glass-panel,
+        html:not(.dark) body.high-contrast #shopIndicator,
+        html:not(.dark) body.high-contrast main > div > div:first-child {
+            background: #ffffff !important;
+            border: 3px solid #000000 !important;
+            color: #000000 !important;
+        }
+        html:not(.dark) body.high-contrast h1,
+        html:not(.dark) body.high-contrast h2,
+        html:not(.dark) body.high-contrast h3,
+        html:not(.dark) body.high-contrast p,
+        html:not(.dark) body.high-contrast span {
+            color: #000000 !important;
+            font-weight: 800 !important;
+        }
+        html:not(.dark) body.high-contrast a {
+            border: 2px solid #000000 !important;
+            background: #ffffff !important;
+        }
+        /* Dark High Contrast */
+        html.dark body.high-contrast {
+            background: #000000 !important;
+            color: #ffffff !important;
+        }
+        html.dark body.high-contrast .glass-panel,
+        html.dark body.high-contrast #shopIndicator,
+        html.dark body.high-contrast main > div > div:first-child {
+            background: #000000 !important;
+            border: 3px solid #ffffff !important;
+            color: #ffffff !important;
+        }
+        html.dark body.high-contrast h1,
+        html.dark body.high-contrast h2,
+        html.dark body.high-contrast h3,
+        html.dark body.high-contrast p,
+        html.dark body.high-contrast span {
+            color: #ffffff !important;
+            font-weight: 800 !important;
+        }
+        html.dark body.high-contrast a {
+            border: 2px solid #ffffff !important;
+            background: #000000 !important;
+        }
+
+        /* Kinetic Motion Blur Graphics Engine Mode */
+        body.motion-blur-active .animate-blob-1 {
+            animation: float-slow 8s linear infinite !important;
+            filter: blur(140px) contrast(1.4) !important;
+        }
+        body.motion-blur-active .animate-blob-2 {
+            animation: float-slow 10s linear infinite !important;
+            filter: blur(140px) contrast(1.4) !important;
+            animation-delay: -2s !important;
+        }
+        body.motion-blur-active .glass-panel:hover {
+            backdrop-filter: blur(40px) saturate(1.8) !important;
+            -webkit-backdrop-filter: blur(40px) saturate(1.8) !important;
+            transform: scale(1.03) translateY(-4px) !important;
+        }
+
+        /* Floating HUD Widgets Styles */
+        .hud-led {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            transition: background-color 300ms, box-shadow 300ms;
+        }
+        .hud-led.active {
+            background-color: #06b6d4;
+            box-shadow: 0 0 10px #06b6d4, 0 0 20px #06b6d4;
+        }
+        .hud-led.inactive {
+            background-color: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
+    </style>
+
+    <!-- Floating HUD Controller Element -->
+    <div id="hudWrapper" class="fixed bottom-6 right-6 z-50 font-sans">
+        <!-- Floating HUD Scanner Button -->
+        <button id="hudTriggerBtn" onclick="toggleHudPanel()" 
+                class="h-14 w-14 rounded-full bg-slate-900/90 dark:bg-slate-950/95 border border-cyan-500/30 text-cyan-400 flex items-center justify-center shadow-lg cursor-pointer transition-all duration-300 hover:scale-110 active:scale-95 focus:outline-none relative group overflow-hidden"
+                style="box-shadow: 0 0 20px rgba(6, 182, 212, 0.15), inset 0 0 12px rgba(6, 182, 212, 0.15);">
+            <!-- Pulsing outer ring -->
+            <span class="absolute inset-0 rounded-full border border-cyan-400/40 animate-ping opacity-25 group-hover:opacity-40"></span>
+            <!-- Rotating HUD icon -->
+            <span id="hudIcon" class="text-2xl transition-transform duration-500 transform group-hover:rotate-45">🧬</span>
+        </button>
+
+        <!-- Floating Glass Control Panel -->
+        <div id="hudPanel" class="hud-transition absolute bottom-16 right-0 w-80 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl shadow-2xl p-5 hidden opacity-0 scale-95 origin-bottom-right"
+             style="box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
+            
+            <!-- Panel Header -->
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-white/5 pb-3 mb-4">
+                <div class="flex items-center gap-2">
+                    <span class="text-xs animate-pulse text-cyan-500">🟢</span>
+                    <span class="text-[10px] font-black tracking-widest text-slate-500 dark:text-cyan-400 uppercase">MediMart HUD Engine</span>
+                </div>
+                <span class="text-[8px] font-bold text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded uppercase">v1.8.2</span>
+            </div>
+
+            <!-- Theme controls -->
+            <div class="space-y-2 mb-4">
+                <label class="block text-[9px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400">Environment Theme</label>
+                <div class="grid grid-cols-3 gap-1.5 bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+                    <button onclick="changeHudTheme('light')" id="btnThemeLight" 
+                            class="py-1 px-2 rounded-lg text-[10px] font-black uppercase transition-all tracking-wider text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        ☀️ Light
+                    </button>
+                    <button onclick="changeHudTheme('dark')" id="btnThemeDark" 
+                            class="py-1 px-2 rounded-lg text-[10px] font-black uppercase transition-all tracking-wider text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        🌙 Dark
+                    </button>
+                    <button onclick="changeHudTheme('system')" id="btnThemeSystem" 
+                            class="py-1 px-2 rounded-lg text-[10px] font-black uppercase transition-all tracking-wider text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        💻 Sys
+                    </button>
+                </div>
+            </div>
+
+            <!-- Extraordinary Premium Themes Selector -->
+            <div class="space-y-2 mb-4">
+                <label class="block text-[9px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400">Exclusive Art Themes</label>
+                <div class="grid grid-cols-4 gap-1 bg-slate-100 dark:bg-white/5 p-1 rounded-xl">
+                    <button onclick="changeExtraordinaryTheme('default')" id="btnExtraDefault" 
+                            class="py-1 px-1 rounded-lg text-[8px] font-black uppercase transition-all tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        Default
+                    </button>
+                    <button onclick="changeExtraordinaryTheme('cyberpunk')" id="btnExtraCyberpunk" 
+                            class="py-1 px-1 rounded-lg text-[8px] font-black uppercase transition-all tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        Cyber
+                    </button>
+                    <button onclick="changeExtraordinaryTheme('mint')" id="btnExtraMint" 
+                            class="py-1 px-1 rounded-lg text-[8px] font-black uppercase transition-all tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        Mint
+                    </button>
+                    <button onclick="changeExtraordinaryTheme('amethyst')" id="btnExtraAmethyst" 
+                            class="py-1 px-1 rounded-lg text-[8px] font-black uppercase transition-all tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+                        Royal
+                    </button>
+                </div>
+            </div>
+
+            <!-- Accessibility & Graphics Engine options -->
+            <div class="space-y-2.5">
+                <label class="block text-[9px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-slate-400">Accessibility & Visual Engine</label>
+                
+                <!-- Toggle High Contrast -->
+                <button onclick="toggleAccessibilityFeature('contrast')" 
+                        class="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-all text-left">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Ultra-Contrast Mode</span>
+                        <span class="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">High-contrast solid borders & font weights</span>
+                    </div>
+                    <span id="contrastLed" class="hud-led inactive"></span>
+                </button>
+
+                <!-- Toggle Motion Blur -->
+                <button onclick="toggleAccessibilityFeature('motion')" 
+                        class="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200 dark:border-white/5 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/10 transition-all text-left">
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Kinetic Motion Blur</span>
+                        <span class="text-[9px] text-slate-500 dark:text-slate-400 mt-0.5">Hardware-accelerated viewport blur overlay</span>
+                    </div>
+                    <span id="motionLed" class="hud-led inactive"></span>
+                </button>
+            </div>
+
+            <!-- Footer info -->
+            <div class="mt-4 pt-3 border-t border-slate-200 dark:border-white/5 flex items-center justify-between text-[8px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+                <span>Status: Secure Link</span>
+                <span>Neural Net Synced</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Non-Blocking JavaScript for Interactive HUD -->
+    <script id="hudScript">
+        // Web Audio Synthesized SFX Generator (Futuristic Soft Beeps)
+        let audioCtxInstance = null;
+        function playHudSound(type) {
+            try {
+                if (!audioCtxInstance) {
+                    audioCtxInstance = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioCtxInstance.state === 'suspended') {
+                    audioCtxInstance.resume();
+                }
+                const osc = audioCtxInstance.createOscillator();
+                const gain = audioCtxInstance.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtxInstance.destination);
+
+                if (type === 'click') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(900, audioCtxInstance.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(1400, audioCtxInstance.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.02, audioCtxInstance.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtxInstance.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtxInstance.currentTime + 0.08);
+                } else if (type === 'toggle') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(700, audioCtxInstance.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(450, audioCtxInstance.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.04, audioCtxInstance.currentTime);
+                    gain.gain.linearRampToValueAtTime(0, audioCtxInstance.currentTime + 0.12);
+                    osc.start();
+                    osc.stop(audioCtxInstance.currentTime + 0.12);
+                }
+            } catch (e) {
+                // Audio Context unavailable or blocked
+            }
+        }
+
+        // Toggle visibility of HUD control panel
+        function toggleHudPanel() {
+            const panel = document.getElementById('hudPanel');
+            const icon = document.getElementById('hudIcon');
+            const isHidden = panel.classList.contains('hidden');
+
+            playHudSound('click');
+
+            if (isHidden) {
+                panel.classList.remove('hidden');
+                // Force layout recalculation for transition
+                panel.offsetWidth;
+                panel.classList.remove('opacity-0', 'scale-95');
+                panel.classList.add('opacity-100', 'scale-100');
+                icon.classList.add('rotate-90');
+            } else {
+                panel.classList.remove('opacity-100', 'scale-100');
+                panel.classList.add('opacity-0', 'scale-95');
+                icon.classList.remove('rotate-90');
+                setTimeout(() => {
+                    if (panel.classList.contains('opacity-0')) {
+                        panel.classList.add('hidden');
+                    }
+                }, 350);
+            }
+        }
+
+        // Close HUD panel when clicking outside
+        document.addEventListener('click', (e) => {
+            const wrapper = document.getElementById('hudWrapper');
+            const panel = document.getElementById('hudPanel');
+            const icon = document.getElementById('hudIcon');
+            if (wrapper && !wrapper.contains(e.target) && !panel.classList.contains('hidden')) {
+                panel.classList.remove('opacity-100', 'scale-100');
+                panel.classList.add('opacity-0', 'scale-95');
+                icon.classList.remove('rotate-90');
+                setTimeout(() => {
+                    if (panel.classList.contains('opacity-0')) {
+                        panel.classList.add('hidden');
+                    }
+                }, 350);
+            }
+        });
+
+        // Initialize HUD accessibility states & theme on load
+        function initHudEngine() {
+            // Theme setup
+            const savedTheme = localStorage.getItem('theme') || 'system';
+            applyEnvironmentTheme(savedTheme);
+
+            // Extraordinary Theme setup
+            const savedExtraTheme = localStorage.getItem('landing_theme') || 'default';
+            applyExtraordinaryTheme(savedExtraTheme);
+
+            // Contrast setup
+            const savedContrast = localStorage.getItem('hud_contrast') === 'true';
+            if (savedContrast) {
+                document.body.classList.add('high-contrast');
+                const led = document.getElementById('contrastLed');
+                if (led) led.className = 'hud-led active';
+            }
+
+            // Motion Blur setup
+            const savedMotion = localStorage.getItem('hud_motion') === 'true';
+            if (savedMotion) {
+                document.body.classList.add('motion-blur-active');
+                const led = document.getElementById('motionLed');
+                if (led) led.className = 'hud-led active';
+            }
+        }
+
+        // Apply visual theme to DOM
+        function applyEnvironmentTheme(theme) {
+            const root = document.documentElement;
+            let isDark = false;
+
+            if (theme === 'system') {
+                isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } else {
+                isDark = theme === 'dark';
+            }
+
+            if (isDark) {
+                root.classList.add('dark');
+            } else {
+                root.classList.remove('dark');
+            }
+
+            // Reset segmented control active states
+            const buttons = {
+                light: document.getElementById('btnThemeLight'),
+                dark: document.getElementById('btnThemeDark'),
+                system: document.getElementById('btnThemeSystem')
+            };
+
+            Object.keys(buttons).forEach(key => {
+                if (!buttons[key]) return;
+                if (key === theme) {
+                    buttons[key].className = 'py-1 px-2 rounded-lg text-[10px] font-black uppercase transition-all tracking-wider bg-cyan-500 text-white shadow-sm shadow-cyan-500/20';
+                } else {
+                    buttons[key].className = 'py-1 px-2 rounded-lg text-[10px] font-black uppercase transition-all tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5';
+                }
+            });
+        }
+
+        // Apply extraordinary theme class to documentElement
+        function applyExtraordinaryTheme(theme) {
+            const root = document.documentElement;
+            root.classList.remove('theme-cyberpunk', 'theme-mint', 'theme-amethyst');
+            if (theme !== 'default') {
+                root.classList.add(`theme-${theme}`);
+            }
+
+            const buttons = {
+                default: document.getElementById('btnExtraDefault'),
+                cyberpunk: document.getElementById('btnExtraCyberpunk'),
+                mint: document.getElementById('btnExtraMint'),
+                amethyst: document.getElementById('btnExtraAmethyst')
+            };
+
+            Object.keys(buttons).forEach(key => {
+                if (!buttons[key]) return;
+                if (key === theme) {
+                    buttons[key].className = 'py-1 px-1 rounded-lg text-[8px] font-black uppercase transition-all tracking-wider bg-cyan-500 text-white shadow-sm shadow-cyan-500/20';
+                } else {
+                    buttons[key].className = 'py-1 px-1 rounded-lg text-[8px] font-black uppercase transition-all tracking-wider text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200/50 dark:hover:bg-white/5';
+                }
+            });
+        }
+
+        // Handle Theme selection via HUD buttons
+        function changeHudTheme(theme) {
+            playHudSound('toggle');
+            localStorage.setItem('theme', theme);
+            applyEnvironmentTheme(theme);
+        }
+
+        // Handle Extraordinary Theme selection via HUD buttons
+        function changeExtraordinaryTheme(theme) {
+            playHudSound('toggle');
+            localStorage.setItem('landing_theme', theme);
+            applyExtraordinaryTheme(theme);
+        }
+
+        // Handle Accessibility Toggles (Contrast / Motion Engine)
+        function toggleAccessibilityFeature(feature) {
+            playHudSound('toggle');
+            if (feature === 'contrast') {
+                const isActive = document.body.classList.toggle('high-contrast');
+                localStorage.setItem('hud_contrast', isActive);
+                document.getElementById('contrastLed').className = isActive ? 'hud-led active' : 'hud-led inactive';
+            } else if (feature === 'motion') {
+                const isActive = document.body.classList.toggle('motion-blur-active');
+                localStorage.setItem('hud_motion', isActive);
+                document.getElementById('motionLed').className = isActive ? 'hud-led active' : 'hud-led inactive';
+            }
+        }
+
+        // Listen for system theme adjustments
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            const savedTheme = localStorage.getItem('theme') || 'system';
+            if (savedTheme === 'system') {
+                applyEnvironmentTheme('system');
+            }
+        });
+
+        // Fire on script initialization
+        initHudEngine();
+    </script>
+</body>
+</html>

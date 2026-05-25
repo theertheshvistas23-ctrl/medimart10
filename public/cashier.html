@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicart - Cashier POS & Billing Hub</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    }
+                }
+            }
+        }
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            if (!token || (role !== 'cashier' && role !== 'admin')) {
+                window.location.href = 'login.html';
+            }
+            return token;
+        }
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        function initTheme() {
+            const theme = localStorage.getItem('theme') || 'system';
+            applyTheme(theme);
+        }
+
+        function applyTheme(theme) {
+            const root = document.documentElement;
+            let isDark = false;
+            if (theme === 'system') {
+                isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } else {
+                isDark = theme === 'dark';
+            }
+            if (isDark) {
+                root.classList.add('dark');
+            } else {
+                root.classList.remove('dark');
+            }
+            const selector = document.getElementById('themeSelector');
+            if (selector) selector.value = theme;
+        }
+
+        function selectTheme(theme) {
+            localStorage.setItem('theme', theme);
+            applyTheme(theme);
+        }
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (localStorage.getItem('theme') === 'system' || !localStorage.getItem('theme')) {
+                applyTheme('system');
+            }
+        });
+    </script>
+    <style>
+        body {
+            font-family: "Plus Jakarta Sans", sans-serif;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 30px -5px rgba(148, 163, 184, 0.15), 0 4px 12px -2px rgba(148, 163, 184, 0.08);
+            transition: background-color 300ms, border-color 300ms, box-shadow 300ms;
+        }
+        .dark .glass-panel {
+            background: rgba(15, 23, 42, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Hide scrollbars but keep functionality */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* Scale up small typography for better dashboard readability */
+        .text-\[9px\] {
+            font-size: 0.72rem !important; /* ~11.5px */
+            line-height: 1rem !important;
+        }
+        .text-\[10px\] {
+            font-size: 0.78rem !important; /* ~12.5px */
+            line-height: 1.1rem !important;
+        }
+        .text-xs {
+            font-size: 0.85rem !important; /* ~13.6px */
+            line-height: 1.25rem !important;
+        }
+        .text-sm {
+            font-size: 0.95rem !important; /* ~15.2px */
+            line-height: 1.4rem !important;
+        }
+        .text-base {
+            font-size: 1.05rem !important; /* ~17px */
+            line-height: 1.6rem !important;
+        }
+
+        /* Print styles */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            body.print-receipt-mode #printReceipt, 
+            body.print-receipt-mode #printReceipt * {
+                visibility: visible;
+            }
+            body.print-invoice-mode #printInvoice, 
+            body.print-invoice-mode #printInvoice * {
+                visibility: visible;
+            }
+            body.print-receipt-mode #printReceipt {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100% !important;
+                max-width: 100% !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+            }
+            body.print-invoice-mode #printInvoice {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100% !important;
+                max-width: 100% !important;
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: block !important;
+            }
+        }
+    </style>
+    <script>
+        function checkAuth() {
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            if (!token || (role !== 'cashier' && role !== 'admin')) {
+                window.location.href = 'login.html';
+            }
+            return token;
+        }
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+    </script>
+</head>
+<body class="bg-gradient-to-br from-slate-100 via-sky-50 to-blue-100/70 text-slate-800 dark:from-[#020617] dark:via-[#090d22] dark:to-[#020617] dark:text-slate-200 min-h-screen flex flex-col relative overflow-x-hidden transition-all duration-500">
+
+    <!-- Decorative background blobs -->
+    <div class="absolute top-[-10%] left-[5%] w-[500px] h-[500px] bg-blue-500/10 dark:bg-blue-500/5 rounded-full blur-[120px] pointer-events-none animate-pulse opacity-40 dark:opacity-100"></div>
+    <div class="absolute bottom-[20%] right-[5%] w-[500px] h-[500px] bg-emerald-500/10 dark:bg-emerald-500/5 rounded-full blur-[120px] pointer-events-none animate-pulse opacity-40 dark:opacity-100"></div>
+
+    <!-- Top Navigation -->
+    <nav class="glass-panel text-slate-800 dark:text-white p-4 flex justify-between items-center border-b border-slate-200 dark:border-white/5 z-20 relative backdrop-blur-xl transition-all duration-300">
+        <div class="flex items-center gap-3">
+            <div class="h-8 w-8 rounded-lg bg-gradient-to-tr from-emerald-500 to-teal-500 flex items-center justify-center">
+                <span class="text-lg">⚡</span>
+            </div>
+            <div>
+                <h1 class="text-lg font-black bg-gradient-to-r from-emerald-600 to-teal-600 dark:from-emerald-400 dark:to-teal-400 bg-clip-text text-transparent uppercase tracking-wider">MEDICART</h1>
+                <p class="text-[9px] text-slate-500 dark:text-slate-400 font-bold tracking-wide uppercase">Cashier Billing & POS Terminal</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-4 md:gap-6">
+            <!-- Shop Operational Status Dropdown -->
+            <div class="hidden md:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/60 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-xl transition">
+                <label class="text-[9px] font-black text-slate-500 dark:text-slate-400 tracking-wider uppercase">Shop Status</label>
+                <select id="shopStatusSelect" onchange="toggleSetting('shop_status', this.value)" class="text-[10px] font-bold bg-white dark:bg-slate-950 text-slate-800 dark:text-white rounded-lg border border-slate-200 dark:border-white/5 p-1 focus:ring-emerald-500 cursor-pointer">
+                    <option value="open">🟢 Open</option>
+                    <option value="closed">🔴 Closed</option>
+                </select>
+            </div>
+            <!-- Payment Enforcement Policy Toggle -->
+            <div class="hidden md:flex items-center gap-2 bg-slate-100 dark:bg-slate-900/60 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-200 dark:border-white/10 px-3 py-1.5 rounded-xl transition">
+                <label class="text-[9px] font-black text-slate-600 dark:text-slate-400 tracking-wider uppercase cursor-pointer" for="enforcePrintToggle">Enforce Payment Print Lock</label>
+                <input type="checkbox" id="enforcePrintToggle" onchange="toggleSetting('enforce_payment_before_print', this.checked)" class="w-4 h-4 text-emerald-600 bg-white dark:bg-slate-950 border-slate-300 dark:border-white/5 rounded focus:ring-emerald-500 focus:ring-2">
+            </div>
+            
+            <a href="admin.html" id="backToAdmin" class="hidden text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-cyan-400 transition font-bold uppercase tracking-wider text-xs">
+                Back to Admin
+            </a>
+
+            <!-- Theme Selector -->
+            <select id="themeSelector" onchange="selectTheme(this.value)" class="bg-white/40 dark:bg-white/10 hover:bg-white/50 dark:hover:bg-white/20 text-slate-800 dark:text-white border border-slate-300 dark:border-white/20 px-3 py-1.5 rounded-xl text-xs font-bold transition focus:outline-none cursor-pointer">
+                <option value="light" class="bg-white text-slate-800 dark:bg-slate-900 dark:text-white">☀️ Light</option>
+                <option value="dark" class="bg-white text-slate-800 dark:bg-slate-900 dark:text-white">🌙 Dark</option>
+                <option value="system" class="bg-white text-slate-800 dark:bg-slate-900 dark:text-white">💻 System</option>
+            </select>
+
+            <button onclick="logout()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-1.5 rounded-xl font-extrabold text-xs transition uppercase tracking-widest shadow-md shadow-rose-500/20">Logout</button>
+        </div>
+    </nav>
+    <!-- Main Workspace Container -->
+    <div class="flex-grow p-6 flex flex-col lg:flex-row gap-6 max-w-7xl mx-auto w-full h-[calc(100vh-80px)] overflow-hidden z-10 relative">
+        
+        <!-- COLUMN 1: Pending Orders Queue (1/4 Width) -->
+        <div class="w-full lg:w-1/4 glass-panel rounded-3xl border border-slate-200 dark:border-white/5 flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-white/5 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/20">
+                <div>
+                    <h2 id="queueHeaderTitle" class="text-sm font-bold text-slate-800 dark:text-slate-200">Customer Queue</h2>
+                    <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Pending online orders</p>
+                </div>
+                <button onclick="loadPendingOrders()" class="bg-indigo-55 hover:bg-indigo-100 dark:bg-indigo-500/10 dark:hover:bg-indigo-500/20 text-indigo-600 dark:text-cyan-400 text-xs font-bold px-3 py-1.5 rounded-xl transition-all flex items-center gap-1">
+                    <span>↻</span> Refresh
+                </button>
+            </div>
+            
+            <div class="flex-grow overflow-y-auto p-4 space-y-3 no-scrollbar" id="pendingOrdersList">
+                <!-- Loaded Dynamically -->
+            </div>
+        </div>
+
+        <!-- COLUMN 2: Inventory Catalog (2/4 Width) -->
+        <div class="w-full lg:w-2/4 glass-panel rounded-3xl border border-slate-200 dark:border-white/5 flex flex-col overflow-hidden">
+            <div class="p-4 border-b border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/20">
+                <h2 class="text-sm font-bold text-slate-800 dark:text-slate-200 mb-2">Medicine Catalog</h2>
+                <div class="relative flex items-center">
+                    <span class="absolute left-3 text-slate-400 pointer-events-none">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search by medicine name or category..." 
+                           class="w-full pl-9 pr-8 py-2 bg-white dark:bg-slate-950/45 border border-slate-200 dark:border-white/10 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all" 
+                           onkeyup="filterMeds()" autofocus>
+                    <button onclick="clearSearch()" id="clearSearchBtn" class="absolute right-3 text-slate-400 hover:text-slate-600 dark:hover:text-white font-bold text-sm hidden transition-colors">×</button>
+                </div>
+            </div>
+            
+            <div class="flex-grow overflow-y-auto p-4 no-scrollbar">
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-4" id="medicineGrid">
+                    <!-- Loaded Dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMN 3: Cart, Discounts & Billing Panel (1/4 Width) -->
+        <div class="w-full lg:w-1/4 glass-panel rounded-3xl border border-slate-200 dark:border-white/5 flex flex-col overflow-hidden">
+            <!-- Cart Header -->
+            <div class="p-4 border-b border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/20 flex justify-between items-center">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-800 dark:text-slate-200">Current Cart</h2>
+                    <span id="loadedOrderLabel" class="text-[9px] bg-yellow-100 dark:bg-yellow-950/30 text-yellow-800 dark:text-yellow-400 px-2 py-0.5 rounded-full font-bold uppercase hidden">Online Order</span>
+                </div>
+                <button onclick="clearPOSSession()" class="text-xs text-rose-500 hover:text-rose-700 font-bold hover:underline transition-all">Clear</button>
+            </div>
+
+            <!-- Cart Items list -->
+            <div class="flex-grow overflow-y-auto p-4 space-y-3 no-scrollbar" id="cartItems">
+                <!-- Cart items load here -->
+            </div>
+
+            <!-- Pricing Summary and Discount Controls -->
+            <div class="p-4 border-t border-slate-200 dark:border-white/5 bg-slate-50/50 dark:bg-slate-950/20 space-y-4">
+                <!-- Discount Input Fields (Only accessible to Cashier) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">Flat (₹)</label>
+                        <input type="number" id="discountAmountInput" step="0.01" min="0" value="0" oninput="calculateTotals()" 
+                               class="w-full p-2 bg-white dark:bg-slate-950/45 border border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-800 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">Percent (%)</label>
+                        <input type="number" id="discountPercentageInput" min="0" max="100" value="0" oninput="calculateTotals()" 
+                               class="w-full p-2 bg-white dark:bg-slate-950/45 border border-slate-200 dark:border-white/10 rounded-xl text-xs text-slate-800 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20">
+                    </div>
+                </div>
+                
+                <!-- Payment Method (India) selection for Cashier -->
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wider mb-1">Payment Method</label>
+                    <select id="paymentMethodSelect" class="w-full p-2.5 bg-white dark:bg-slate-950/45 border border-slate-200 dark:border-white/10 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 cursor-pointer">
+                        <option value="Cash" class="bg-white text-slate-800 dark:bg-slate-900 dark:text-white">💵 Cash</option>
+                        <option value="UPI" class="bg-white text-slate-800 dark:bg-slate-900 dark:text-white">🇮🇳 UPI (GPay/PhonePe/Paytm)</option>
+                        <option value="Card" class="bg-white text-slate-800 dark:bg-slate-900 dark:text-white">💳 Credit/Debit Card</option>
+                        <option value="Net Banking" class="bg-white text-slate-800 dark:bg-slate-900 dark:text-white">🏦 Net Banking</option>
+                    </select>
+                </div>
+
+                <!-- Totals Breakdown -->
+                <div class="space-y-2 border-t border-slate-200 dark:border-white/10 pt-3 text-xs">
+                    <div class="flex justify-between text-slate-600 dark:text-slate-400 text-xs font-semibold">
+                        <span>Subtotal</span>
+                        <span id="subtotal" class="font-bold text-slate-800 dark:text-slate-200 font-mono">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600 dark:text-slate-400 text-xs font-semibold">
+                        <span>Discount Total</span>
+                        <span id="totalDiscount" class="font-bold text-rose-600 dark:text-rose-400 font-mono">-₹0.00</span>
+                    </div>
+                    <div class="flex justify-between text-slate-600 dark:text-slate-400 text-xs font-semibold">
+                        <span>VAT Tax (10%)</span>
+                        <span id="tax" class="font-bold text-slate-800 dark:text-slate-200 font-mono">₹0.00</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-sm border-t border-dashed border-slate-200 dark:border-white/10 pt-2 text-slate-900 dark:text-white">
+                        <span>Grand Total</span>
+                        <span id="total" class="font-black font-mono text-indigo-600 dark:text-emerald-400 text-base">₹0.00</span>
+                    </div>
+                </div>                   </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-2 mt-4" id="actionButtons">
+                    <button id="btnSaveInvoice" onclick="saveInvoice()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-bold text-sm transition-all shadow-md">
+                        Save & Finalize Invoice
+                    </button>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="btnPrintReceipt" onclick="printReceipt()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold text-xs transition-all shadow-md opacity-50 cursor-not-allowed" disabled>
+                            Print Receipt
+                        </button>
+                        <button id="btnPrintInvoice" onclick="printInvoice()" class="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-xl font-bold text-xs transition-all shadow-md opacity-50 cursor-not-allowed" disabled>
+                            Print Invoice
+                        </button>
+                    </div>
+                    <button id="btnNewSession" onclick="startNewSession()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2.5 rounded-xl font-bold text-xs transition-all hidden border border-slate-200">
+                        + New Billing Session
+                    </button>
+                </div>
+
+                <!-- Payment Verification Card (Enforcement Flow) -->
+                <div id="paymentVerifyCard" class="hidden p-4 rounded-xl border border-dashed border-slate-300 dark:border-white/10 bg-slate-100/50 dark:bg-slate-900/40 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Payment Status</span>
+                        <span id="paymentStatusBadge" class="text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-900/50">Unpaid</span>
+                    </div>
+                    <p id="paymentStatusInfo" class="text-[10px] text-slate-500 dark:text-slate-400 leading-normal">
+                        Waiting for cash payment to be received at the counter.
+                    </p>
+                    <button id="btnVerifyPayment" onclick="verifyCurrentPayment()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm">
+                        Confirm Payment Received
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Printer Receipt Section (Thermal) -->
+    <div id="printReceipt" class="hidden font-mono text-sm p-6 bg-white text-gray-900 border border-dashed border-gray-400 mx-auto w-[80mm]">
+        <!-- Receipt layout rendered dynamically -->
+    </div>
+
+    <!-- Hidden Printer Invoice Section (A4) -->
+    <div id="printInvoice" class="hidden bg-white text-gray-900 mx-auto w-full">
+        <!-- Invoice layout rendered dynamically -->
+    </div>
+
+    <script>
+        const token = checkAuth();
+        const authHeaders = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+        
+        let allMeds = [];
+        let cart = [];
+        let loadedOrderId = null;
+        let loadedOrderCustomer = null;
+        let lastQueueCount = null;
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const toast = document.createElement('div');
+            toast.className = `p-4 rounded-xl shadow-lg text-white font-semibold text-xs pointer-events-auto transform translate-y-2 opacity-0 transition-all duration-300 flex items-center gap-2 `;
+            
+            if (type === 'success') {
+                toast.className += 'bg-emerald-600 border border-emerald-500/20';
+            } else if (type === 'warning') {
+                toast.className += 'bg-amber-600 border border-amber-500/20';
+            } else if (type === 'error') {
+                toast.className += 'bg-rose-600 border border-rose-500/20';
+            } else if (type === 'info') {
+                toast.className += 'bg-indigo-600 border border-indigo-500/20';
+            } else {
+                toast.className += 'bg-slate-700 border border-slate-600/20';
+            }
+            
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✓' : type === 'warning' ? '⚠' : type === 'error' ? '🗙' : 'ℹ'}</span>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+            
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        function playNotificationSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Beep 1
+                const osc1 = ctx.createOscillator();
+                const gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(587.33, ctx.currentTime);
+                gain1.gain.setValueAtTime(0.08, ctx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start();
+                osc1.stop(ctx.currentTime + 0.15);
+                
+                // Beep 2
+                setTimeout(() => {
+                    const osc2 = ctx.createOscillator();
+                    const gain2 = ctx.createGain();
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(880.00, ctx.currentTime);
+                    gain2.gain.setValueAtTime(0.08, ctx.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.start();
+                    osc2.stop(ctx.currentTime + 0.25);
+                }, 100);
+            } catch (e) {
+                console.warn('Web Audio playback failed or blocked:', e);
+            }
+        }
+
+        if (localStorage.getItem('role') === 'admin') {
+            document.getElementById('backToAdmin').classList.remove('hidden');
+        }
+
+        // Initialize Cashier Portal
+        async function init() {
+            await loadSettings();
+            await loadMedicines();
+            await loadPendingOrders();
+        }
+
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings', { headers: authHeaders });
+                if (res.ok) {
+                    const settings = await res.json();
+                    document.getElementById('enforcePrintToggle').checked = (settings.enforce_payment_before_print === 'true');
+                    
+                    if (settings.shop_status) {
+                        document.getElementById('shopStatusSelect').value = settings.shop_status;
+                    }
+                }
+            } catch (err) {
+                console.error("Error loading settings:", err);
+            }
+        }
+
+        async function toggleSetting(key, value) {
+            try {
+                await fetch('/api/settings', {
+                    method: 'PUT',
+                    headers: authHeaders,
+                    body: JSON.stringify({ key, value: String(value) })
+                });
+                
+                // Sync checking/select in both screens if toggled
+                if (key === 'enforce_payment_before_print') {
+                    const toggles = document.querySelectorAll('#enforcePrintToggle');
+                    toggles.forEach(t => t.checked = (value === 'true' || value === true));
+                } else if (key === 'shop_status') {
+                    const selects = document.querySelectorAll('#shopStatusSelect');
+                    selects.forEach(s => s.value = value);
+                }
+            } catch (err) {
+                console.error("Error toggling setting:", err);
+            }
+        }
+
+        // Load inventory list
+        async function loadMedicines() {
+            let res = await fetch('/api/cashier/medicines', { headers: authHeaders });
+            if (res.ok) {
+                allMeds = await res.json();
+                renderMeds(allMeds);
+            } else if (res.status === 403) {
+                showToast("Your account is still pending admin approval.", "error");
+                setTimeout(logout, 3000);
+            }
+        }
+
+        // Render Inventory Cards
+        function renderMeds(meds) {
+            const grid = document.getElementById('medicineGrid');
+            grid.innerHTML = '';
+            meds.forEach(m => {
+                const outOfStock = m.quantity <= 0;
+                grid.innerHTML += `
+                    <div class="glass-panel p-4 rounded-2xl border border-slate-200 dark:border-white/5 hover:border-emerald-500/30 dark:hover:border-emerald-500/30 hover:bg-emerald-50/30 dark:hover:bg-emerald-950/20 hover:shadow-md transition-all flex flex-col justify-between h-36 relative ${outOfStock ? 'opacity-40 cursor-not-allowed bg-slate-100/50 dark:bg-slate-900/10' : 'cursor-pointer'}"
+                         onclick="${outOfStock ? '' : `addToCart(${m.id})`}">
+                        <div>
+                            <h3 class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">${m.name}</h3>
+                            <p class="text-[9px] text-slate-500 dark:text-slate-400 font-bold tracking-wide truncate uppercase mb-1">${m.category}</p>
+                            <p class="text-emerald-600 dark:text-emerald-400 font-black text-sm">₹${m.price.toFixed(2)}</p>
+                        </div>
+                        <div class="mt-2 pt-2 border-t border-slate-200 dark:border-white/5 flex items-center justify-between text-[9px] text-slate-500 dark:text-slate-400 font-semibold">
+                            <span>Stock</span>
+                            <span class="${m.quantity < 5 ? 'text-rose-600 dark:text-rose-400 font-bold' : 'text-slate-700 dark:text-slate-300'}">${m.quantity}</span>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        // Filter inventory on keypress
+        function filterMeds() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) {
+                if (q) {
+                    clearBtn.classList.remove('hidden');
+                } else {
+                    clearBtn.classList.add('hidden');
+                }
+            }
+            const filtered = allMeds.filter(m => 
+                m.name.toLowerCase().includes(q) || 
+                m.category.toLowerCase().includes(q)
+            );
+            renderMeds(filtered);
+        }
+
+        function clearSearch() {
+            const input = document.getElementById('searchInput');
+            input.value = '';
+            const clearBtn = document.getElementById('clearSearchBtn');
+            if (clearBtn) clearBtn.classList.add('hidden');
+            filterMeds();
+        }
+
+        // Load Pending orders submitted by online customers
+        async function loadPendingOrders() {
+            const res = await fetch('/api/cashier/pending-orders', { headers: authHeaders });
+            if (res.ok) {
+                const orders = await res.json();
+                
+                // Update queue count badge in header
+                const queueTitle = document.getElementById('queueHeaderTitle');
+                if (queueTitle) {
+                    queueTitle.innerHTML = `Customer Queue <span class="bg-indigo-100 text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-300 text-[10px] font-black px-2 py-0.5 rounded-full ml-1.5 border border-indigo-200 dark:border-indigo-900/50">${orders.length}</span>`;
+                }
+
+                // If new orders arrived, notify cashier visually & audibly
+                if (lastQueueCount !== null && orders.length > lastQueueCount) {
+                    playNotificationSound();
+                    showToast(`New online order submitted! Queue size: ${orders.length}`, 'info');
+                }
+                lastQueueCount = orders.length;
+
+                const container = document.getElementById('pendingOrdersList');
+                container.innerHTML = '';
+                
+                if (orders.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-8">
+                            <span class="text-2xl opacity-40">📥</span>
+                            <p class="text-xs text-slate-400 font-semibold mt-2">Queue is empty</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                orders.forEach(o => {
+                    const dateObj = new Date(o.date);
+                    const formattedDate = dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + dateObj.toLocaleDateString();
+                    container.innerHTML += `
+                        <div class="glass-panel p-3.5 rounded-2xl border border-slate-200 dark:border-white/5 hover:border-indigo-500/30 dark:hover:border-indigo-500/30 hover:bg-indigo-50/10 dark:hover:bg-indigo-950/10 transition-all flex flex-col gap-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[10px] font-extrabold text-indigo-700 bg-indigo-50/80 px-2 py-0.5 rounded-full border border-indigo-100/30 dark:text-indigo-300 dark:bg-indigo-950/40 dark:border-indigo-900/30">Order #${o.id}</span>
+                                <span class="text-[9px] text-slate-500 dark:text-slate-400 font-medium">${formattedDate}</span>
+                            </div>
+                            <div class="text-xs text-slate-600 dark:text-slate-400">
+                                <p class="font-bold truncate text-slate-700 dark:text-slate-200">${o.username || 'Walk-in'}</p>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">${o.email || 'N/A'}</p>
+                            </div>
+                            <div class="flex justify-between items-center mt-1 pt-2 border-t border-slate-200 dark:border-white/5">
+                                <span class="text-xs font-black text-slate-800 dark:text-slate-200 font-mono">₹${o.total_price.toFixed(2)}</span>
+                                <button onclick="loadPendingOrderDetail(${o.id})" class="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                                    Load Bill
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+        }
+
+        // Fetch pending order details
+        async function loadPendingOrderDetail(orderId) {
+            const res = await fetch(`/api/cashier/pending-orders/${orderId}`, { headers: authHeaders });
+            if (res.ok) {
+                const data = await res.json();
+                loadedOrderId = orderId;
+                loadedOrderCustomer = { 
+                    username: data.order.username || 'Online Customer', 
+                    email: data.order.email || 'N/A' 
+                };
+
+                const label = document.getElementById('loadedOrderLabel');
+                label.innerText = `Online Order #${orderId}`;
+                label.classList.remove('hidden');
+
+                // Load items directly to the POS cart
+                cart = data.items.map(i => ({
+                    medicine_id: i.medicine_id,
+                    name: i.name,
+                    price: i.price,
+                    quantity: i.quantity
+                }));
+                
+                // Pre-select payment method if available in the loaded order
+                if (data.order.payment_method) {
+                    document.getElementById('paymentMethodSelect').value = data.order.payment_method;
+                }
+                
+                renderCart();
+            } else {
+                showToast('Failed to load pending order details', 'error');
+            }
+        }
+
+        // Add a product from inventory catalog to billing cart
+        function addToCart(id) {
+            const med = allMeds.find(m => m.id === id);
+            if (!med) return;
+
+            const existing = cart.find(c => c.medicine_id === id);
+            if (existing) {
+                if (existing.quantity < med.quantity) {
+                    existing.quantity++;
+                } else {
+                    showToast(`Insufficient stock. Only ${med.quantity} available.`, 'warning');
+                }
+            } else {
+                cart.push({ 
+                    medicine_id: id, 
+                    name: med.name, 
+                    price: med.price, 
+                    quantity: 1 
+                });
+            }
+            renderCart();
+        }
+
+        // Update item quantity from the cart
+        function updateQty(index, change) {
+            const item = cart[index];
+            const med = allMeds.find(m => m.id === item.medicine_id);
+            if (!med) return;
+
+            const newQty = item.quantity + change;
+            if (newQty <= 0) {
+                removeFromCart(index);
+                return;
+            }
+
+            if (newQty > med.quantity) {
+                showToast(`Insufficient stock. Only ${med.quantity} available.`, 'warning');
+                return;
+            }
+
+            item.quantity = newQty;
+            renderCart();
+        }
+
+        // Remove item from POS cart
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            renderCart();
+        }
+
+        // Draw cart list & recalculate prices
+        function renderCart() {
+            const container = document.getElementById('cartItems');
+            container.innerHTML = '';
+            
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12">
+                        <span class="text-3xl opacity-30">🛒</span>
+                        <p class="text-xs text-slate-400 font-semibold mt-2">Cart is empty</p>
+                    </div>
+                `;
+                calculateTotals();
+                return;
+            }
+
+            cart.forEach((c, index) => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-100/30 dark:bg-slate-900/40 border border-slate-200 dark:border-white/5 p-3.5 rounded-xl">
+                        <div class="max-w-[60%]">
+                            <p class="font-bold text-xs text-slate-800 dark:text-slate-200 truncate">${c.name}</p>
+                            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">₹${c.price.toFixed(2)} each</p>
+                        </div>
+                        <div class="flex flex-col items-end gap-1.5">
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="updateQty(${index}, -1)" class="px-1.5 py-0.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded font-extrabold text-[10px] transition-colors">-</button>
+                                <span class="font-semibold text-xs text-slate-800 dark:text-slate-200 w-5 text-center font-mono">${c.quantity}</span>
+                                <button onclick="updateQty(${index}, 1)" class="px-1.5 py-0.5 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded font-extrabold text-[10px] transition-colors">+</button>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-extrabold text-xs text-slate-800 dark:text-slate-200 font-mono">₹${(c.quantity * c.price).toFixed(2)}</span>
+                                <button onclick="removeFromCart(${index})" class="text-rose-600 dark:text-rose-400 text-[10px] font-black px-1.5 py-0.2 border border-rose-200/50 dark:border-rose-950/50 rounded-md hover:bg-rose-50 dark:hover:bg-rose-950/20 transition-colors">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            calculateTotals();
+        }
+
+        // Live calculation of all prices including discounts and taxes
+        let billingResult = {
+            subtotal: 0,
+            discount: 0,
+            tax: 0,
+            total: 0
+        };
+
+        function calculateTotals() {
+            let subtotal = 0;
+            cart.forEach(c => {
+                subtotal += c.price * c.quantity;
+            });
+
+            const discountFlat = parseFloat(document.getElementById('discountAmountInput').value) || 0;
+            const discountPercent = parseFloat(document.getElementById('discountPercentageInput').value) || 0;
+
+            const percentAmount = subtotal * (discountPercent / 100);
+            const totalDiscount = Math.min(subtotal, percentAmount + discountFlat); // Cap discount at subtotal
+
+            const taxableSubtotal = Math.max(0, subtotal - totalDiscount);
+            const tax = taxableSubtotal * 0.10; // 10% VAT
+            const total = taxableSubtotal + tax;
+
+            billingResult = {
+                subtotal,
+                discount: totalDiscount,
+                tax,
+                total
+            };
+
+            document.getElementById('subtotal').innerText = `₹${subtotal.toFixed(2)}`;
+            document.getElementById('totalDiscount').innerText = `-₹${totalDiscount.toFixed(2)}`;
+            document.getElementById('tax').innerText = `₹${tax.toFixed(2)}`;
+            document.getElementById('total').innerText = `₹${total.toFixed(2)}`;
+        }
+
+        // Global variable to keep last completed order data for printing
+        let lastCompletedOrder = null;
+
+        // Prepare physical thermal invoice format
+        function prepareReceipt(orderId, dateStr) {
+            const container = document.getElementById('printReceipt');
+            let itemsHtml = '';
+            
+            // Use lastCompletedOrder if available to ensure we print what was finalized
+            const itemsToPrint = lastCompletedOrder ? lastCompletedOrder.cartCopy : cart;
+            const billingToPrint = lastCompletedOrder ? lastCompletedOrder.billingCopy : billingResult;
+            const customerToPrint = lastCompletedOrder ? lastCompletedOrder.customerCopy : loadedOrderCustomer;
+
+            itemsToPrint.forEach(item => {
+                itemsHtml += `
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; margin: 4px 0;">
+                        <span>${item.name} (x${item.quantity})</span>
+                        <span>₹${(item.quantity * item.price).toFixed(2)}</span>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = `
+                <div style="text-align: center; border-bottom: 1px dashed #000; padding-bottom: 10px; margin-bottom: 10px;">
+                    <h2 style="font-size: 16px; font-weight: bold; margin: 0; letter-spacing: 1px;">MEDICART PHARMACY</h2>
+                    <p style="font-size: 10px; margin: 2px 0; color: #555;">123 Health Boulevard, Brussels, BE</p>
+                    <p style="font-size: 10px; margin: 0; color: #555;">VAT ID: BE 082.912.443</p>
+                </div>
+                
+                <div style="font-size: 10px; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><strong>INVOICE NO:</strong></span>
+                        <span>#${orderId}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><strong>DATE:</strong></span>
+                        <span>${dateStr}</span>
+                    </div>
+                    ${customerToPrint ? `
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><strong>CUSTOMER:</strong></span>
+                        <span>${customerToPrint.username}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><strong>EMAIL:</strong></span>
+                        <span>${customerToPrint.email}</span>
+                    </div>
+                    ` : `
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><strong>CUSTOMER:</strong></span>
+                        <span>Walk-in Patient</span>
+                    </div>
+                    `}
+                    <div style="display: flex; justify-content: space-between;">
+                        <span><strong>OPERATOR:</strong></span>
+                        <span>Cashier Terminal</span>
+                    </div>
+                </div>
+
+                <div style="border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 4px; margin-bottom: 6px;">
+                        <span>Description</span>
+                        <span>Total</span>
+                    </div>
+                    ${itemsHtml}
+                </div>
+
+                <div style="font-size: 11px; line-height: 1.5; border-bottom: 1px dashed #000; padding-bottom: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>Subtotal:</span>
+                        <span>₹${billingToPrint.subtotal.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; color: #e11d48;">
+                        <span>Discount:</span>
+                        <span>-₹${billingToPrint.discount.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>VAT Tax (10%):</span>
+                        <span>₹${billingToPrint.tax.toFixed(2)}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: bold; border-top: 1px dashed #000; padding-top: 4px; margin-top: 4px;">
+                        <span>GRAND TOTAL:</span>
+                        <span>₹${billingToPrint.total.toFixed(2)}</span>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 15px; font-size: 10px; line-height: 1.3;">
+                    <p style="font-weight: bold; margin: 0;">THANK YOU FOR YOUR PATRONAGE!</p>
+                    <p style="margin: 2px 0;">Keep this receipt for warranty or returns.</p>
+                    <p style="font-size: 9px; color: #777; margin: 0;">EU Medical Device Directive Compliant</p>
+                </div>
+            `;
+        }
+
+        // Prepare professional A4 invoice format
+        function prepareInvoice(orderId, dateStr) {
+            const container = document.getElementById('printInvoice');
+            let itemsHtml = '';
+            
+            const itemsToPrint = lastCompletedOrder ? lastCompletedOrder.cartCopy : cart;
+            const billingToPrint = lastCompletedOrder ? lastCompletedOrder.billingCopy : billingResult;
+            const customerToPrint = lastCompletedOrder ? lastCompletedOrder.customerCopy : loadedOrderCustomer;
+            
+            itemsToPrint.forEach((item, index) => {
+                itemsHtml += `
+                    <tr style="border-bottom: 1px solid #e2e8f0; font-size: 12px;">
+                        <td style="padding: 10px; text-align: left; color: #475569;">${index + 1}</td>
+                        <td style="padding: 10px; text-align: left; font-weight: 600; color: #1e293b;">${item.name}</td>
+                        <td style="padding: 10px; text-align: left; color: #64748b;">Pharmaceutical</td>
+                        <td style="padding: 10px; text-align: right; color: #475569;">₹${item.price.toFixed(2)}</td>
+                        <td style="padding: 10px; text-align: center; color: #475569;">${item.quantity}</td>
+                        <td style="padding: 10px; text-align: right; font-weight: 600; color: #1e293b;">₹${(item.quantity * item.price).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <div style="font-family: 'Plus Jakarta Sans', sans-serif; color: #1e293b; max-width: 800px; margin: 0 auto; padding: 20px;">
+                    <!-- Invoice Header -->
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 25px;">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+                                <span style="font-size: 24px;">⚡</span>
+                                <h1 style="font-size: 24px; font-weight: 800; color: #059669; margin: 0; letter-spacing: -0.5px;">MEDICART PHARMACY</h1>
+                            </div>
+                            <p style="font-size: 12px; color: #64748b; margin: 2px 0;">123 Health Boulevard, Brussels, BE</p>
+                            <p style="font-size: 12px; color: #64748b; margin: 2px 0;">Phone: +32 2 555 0199 | Email: contact@medicart.com</p>
+                            <p style="font-size: 12px; color: #64748b; margin: 2px 0;">VAT ID: BE 082.912.443</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <h2 style="font-size: 32px; font-weight: 800; color: #0f172a; margin: 0 0 8px 0; tracking-tight">INVOICE</h2>
+                            <div style="font-size: 12px; color: #475569; display: flex; flex-direction: column; gap: 4px;">
+                                <div><strong>Invoice No:</strong> <span style="color: #0f172a; font-weight: 600;">#${orderId}</span></div>
+                                <div><strong>Date:</strong> <span style="color: #0f172a; font-weight: 600;">${dateStr}</span></div>
+                                <div><strong>Status:</strong> <span style="background-color: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 9999px; font-weight: 700; font-size: 10px; text-transform: uppercase;">PAID</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Client and Transaction Details -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px; margin-bottom: 30px; font-size: 13px; line-height: 1.5;">
+                        <div style="background-color: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9;">
+                            <h3 style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin: 0 0 8px 0; letter-spacing: 0.5px;">Billed To (Customer):</h3>
+                            ${customerToPrint ? `
+                                <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">${customerToPrint.username}</div>
+                                <div style="color: #475569; margin-bottom: 2px;">Email: ${customerToPrint.email}</div>
+                                <div style="color: #475569;">Type: Online Registered Customer</div>
+                            ` : `
+                                <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">Walk-in Patient</div>
+                                <div style="color: #64748b; font-style: italic;">No contact info provided</div>
+                                <div style="color: #475569; margin-top: 2px;">Type: Counter POS Sale</div>
+                            `}
+                        </div>
+                        <div style="background-color: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; display: flex; flex-direction: column; justify-content: space-between;">
+                            <div>
+                                <h3 style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin: 0 0 8px 0; letter-spacing: 0.5px;">Payment Details:</h3>
+                                <div style="color: #475569; margin-bottom: 2px;">Method: Cash/Card POS</div>
+                                <div style="color: #475569;">Operator: Cashier Terminal</div>
+                            </div>
+                            <div style="font-size: 11px; color: #94a3b8; text-align: right; font-style: italic;">Medicart Secure Billing</div>
+                        </div>
+                    </div>
+
+                    <!-- Items Table -->
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; border-bottom: 2px solid #e2e8f0; font-size: 12px; text-transform: uppercase; font-weight: 700; color: #475569;">
+                                <th style="padding: 12px 10px; text-align: left; width: 60px;">Sr. No</th>
+                                <th style="padding: 12px 10px; text-align: left;">Medicine / Product</th>
+                                <th style="padding: 12px 10px; text-align: left; width: 150px;">Category</th>
+                                <th style="padding: 12px 10px; text-align: right; width: 100px;">Unit Price</th>
+                                <th style="padding: 12px 10px; text-align: center; width: 80px;">Qty</th>
+                                <th style="padding: 12px 10px; text-align: right; width: 120px;">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${itemsHtml}
+                        </tbody>
+                    </table>
+
+                    <!-- Totals Breakdown -->
+                    <div style="display: flex; justify-content: flex-end; margin-bottom: 40px;">
+                        <div style="width: 320px; font-size: 13px; line-height: 1.8;">
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 4px 0; color: #475569;">
+                                <span>Subtotal:</span>
+                                <span style="font-weight: 600; color: #0f172a;">₹${billingToPrint.subtotal.toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 4px 0; color: #e11d48;">
+                                <span>Discount:</span>
+                                <span style="font-weight: 600;">-₹${billingToPrint.discount.toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #f1f5f9; padding: 4px 0; color: #475569;">
+                                <span>VAT Tax (10%):</span>
+                                <span style="font-weight: 600; color: #0f172a;">₹${billingToPrint.tax.toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-top: 2px solid #e2e8f0; font-size: 16px; font-weight: 800; color: #0f172a;">
+                                <span>Grand Total:</span>
+                                <span style="color: #059669; text-decoration: underline; text-underline-offset: 4px; font-weight: 800;">₹${billingToPrint.total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Footer -->
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center; font-size: 11px; color: #64748b; line-height: 1.6;">
+                        <p style="font-weight: 700; color: #0f172a; margin: 0 0 4px 0; text-transform: uppercase; letter-spacing: 0.5px;">Thank you for choosing Medicart Pharmacy!</p>
+                        <p style="margin: 0 0 12px 0;">Please review instructions on your prescribed medicines. Once medicines are sold, returns or exchanges are subject to local guidelines.</p>
+                        <p style="font-style: italic; font-size: 10px; color: #94a3b8; margin: 0;">This is a computer-generated document. No signature is required.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // POS Checkout / Finalize - Save to DB
+        async function saveInvoice() {
+            if (cart.length === 0) return showToast('Cart is empty!', 'warning');
+            
+            const pMethod = document.getElementById('paymentMethodSelect').value;
+            const payload = {
+                order_id: loadedOrderId, // Null if direct POS sale
+                items: cart.map(c => ({ medicine_id: c.medicine_id, quantity: c.quantity })),
+                discount_amount: parseFloat(document.getElementById('discountAmountInput').value) || 0,
+                discount_percentage: parseFloat(document.getElementById('discountPercentageInput').value) || 0,
+                tax_amount: billingResult.tax,
+                final_total: billingResult.total,
+                payment_method: pMethod
+            };
+
+            let res = await fetch('/api/cashier/checkout', {
+                method: 'POST',
+                headers: authHeaders,
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                
+                // Store details for printing
+                lastCompletedOrder = {
+                    order_id: data.order_id,
+                    dateStr: new Date().toLocaleString(),
+                    cartCopy: [...cart],
+                    billingCopy: { ...billingResult },
+                    customerCopy: loadedOrderCustomer ? { ...loadedOrderCustomer } : null,
+                    paymentMethod: pMethod
+                };
+
+                // Prepare both receipt and A4 invoice containers
+                prepareReceipt(data.order_id, lastCompletedOrder.dateStr);
+                prepareInvoice(data.order_id, lastCompletedOrder.dateStr);
+
+                // Update UI buttons
+                document.getElementById('btnSaveInvoice').disabled = true;
+                document.getElementById('btnSaveInvoice').classList.add('opacity-50', 'cursor-not-allowed');
+                document.getElementById('btnNewSession').classList.remove('hidden');
+
+                const receiptBtn = document.getElementById('btnPrintReceipt');
+                const invoiceBtn = document.getElementById('btnPrintInvoice');
+                
+                receiptBtn.innerText = `Print Receipt #${data.order_id}`;
+                invoiceBtn.innerText = `Print Invoice #${data.order_id}`;
+
+                const enforcePrint = document.getElementById('enforcePrintToggle').checked;
+
+                if (enforcePrint) {
+                    // Lock printing and show payment verification panel
+                    receiptBtn.disabled = true;
+                    receiptBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                    
+                    invoiceBtn.disabled = true;
+                    invoiceBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                    const statusBadge = document.getElementById('paymentStatusBadge');
+                    const statusInfo = document.getElementById('paymentStatusInfo');
+                    const verifyBtn = document.getElementById('btnVerifyPayment');
+
+                    statusBadge.className = "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200";
+                    statusBadge.innerText = "Unpaid";
+
+                    verifyBtn.disabled = false;
+                    if (pMethod === 'Cash') {
+                        statusInfo.innerText = "Waiting for Cash receipt confirmation. Confirm that the customer's cash has been received before printing.";
+                        verifyBtn.innerText = "Mark Cash Received";
+                        verifyBtn.className = "w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm";
+                    } else {
+                        statusInfo.innerText = `Verify that the customer's digital payment (${pMethod}) is verified and settled.`;
+                        verifyBtn.innerText = "Confirm Payment Received";
+                        verifyBtn.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm";
+                    }
+
+                    document.getElementById('paymentVerifyCard').classList.remove('hidden');
+                    showToast(`Invoice #${data.order_id} saved successfully! Verification required.`, 'info');
+                } else {
+                    // Unlock printing immediately
+                    receiptBtn.disabled = false;
+                    receiptBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    
+                    invoiceBtn.disabled = false;
+                    invoiceBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+                    showToast(`Invoice #${data.order_id} saved successfully! Printing unlocked.`, 'success');
+                }
+                
+                // Reload lists in background
+                await loadMedicines();
+                await loadPendingOrders();
+
+            } else {
+                const err = await res.json();
+                showToast('Save Invoice failed: ' + err.error, 'error');
+            }
+        }
+
+        function verifyCurrentPayment() {
+            if (!lastCompletedOrder) return;
+
+            // Mark as Paid
+            const statusBadge = document.getElementById('paymentStatusBadge');
+            statusBadge.className = "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200";
+            statusBadge.innerText = "Verified & Paid";
+
+            const verifyBtn = document.getElementById('btnVerifyPayment');
+            verifyBtn.disabled = true;
+            verifyBtn.className = "w-full bg-slate-100 text-slate-400 py-2.5 rounded-xl font-bold text-xs cursor-not-allowed transition-all";
+            verifyBtn.innerText = "Verified ✔";
+
+            // Unlock Print Buttons
+            const receiptBtn = document.getElementById('btnPrintReceipt');
+            receiptBtn.disabled = false;
+            receiptBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            const invoiceBtn = document.getElementById('btnPrintInvoice');
+            invoiceBtn.disabled = false;
+            invoiceBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            showToast("Payment verified! Print functions unlocked.", "success");
+        }
+
+        // Print receipt (Thermal roll layout)
+        function printReceipt() {
+            if (!lastCompletedOrder) return showToast('No completed invoice to print!', 'warning');
+            document.body.classList.remove('print-invoice-mode');
+            document.body.classList.add('print-receipt-mode');
+            window.print();
+            setTimeout(() => {
+                document.body.classList.remove('print-receipt-mode');
+            }, 500);
+        }
+
+        // Print invoice (A4 page layout)
+        function printInvoice() {
+            if (!lastCompletedOrder) return showToast('No completed invoice to print!', 'warning');
+            document.body.classList.remove('print-receipt-mode');
+            document.body.classList.add('print-invoice-mode');
+            window.print();
+            setTimeout(() => {
+                document.body.classList.remove('print-invoice-mode');
+            }, 500);
+        }
+
+        // Reset current working session
+        function clearPOSSession() {
+            cart = [];
+            loadedOrderId = null;
+            loadedOrderCustomer = null;
+            
+            document.getElementById('loadedOrderLabel').classList.add('hidden');
+            document.getElementById('discountAmountInput').value = 0;
+            document.getElementById('discountPercentageInput').value = 0;
+            
+            document.getElementById('paymentVerifyCard').classList.add('hidden');
+            const verifyBtn = document.getElementById('btnVerifyPayment');
+            verifyBtn.disabled = false;
+            verifyBtn.className = "w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl font-bold text-xs transition-all shadow-sm";
+            verifyBtn.innerText = "Confirm Payment Received";
+            
+            renderCart();
+        }
+
+        // Reset POS for next session
+        function startNewSession() {
+            clearPOSSession();
+            
+            // Reset action buttons UI
+            const saveBtn = document.getElementById('btnSaveInvoice');
+            saveBtn.disabled = false;
+            saveBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+            const receiptBtn = document.getElementById('btnPrintReceipt');
+            receiptBtn.disabled = true;
+            receiptBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            receiptBtn.innerText = 'Print Receipt';
+
+            const invoiceBtn = document.getElementById('btnPrintInvoice');
+            invoiceBtn.disabled = true;
+            invoiceBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            invoiceBtn.innerText = 'Print Invoice';
+
+            document.getElementById('btnNewSession').classList.add('hidden');
+            lastCompletedOrder = null;
+        }
+    </script>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2 pointer-events-none"></div>
+
+    <script>
+        // Bind Ctrl+Enter shortcut for saving invoice
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                e.preventDefault();
+                const btn = document.getElementById('btnSaveInvoice');
+                if (btn && !btn.disabled && cart.length > 0) {
+                    saveInvoice();
+                }
+            }
+        });
+
+        // Auto-refresh queue every 30 seconds
+        setInterval(loadPendingOrders, 30000);
+
+        // Init page
+        init();
+    </script>
+</body>
+</html>

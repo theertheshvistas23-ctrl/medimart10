@@ -1,0 +1,61 @@
+<div class="container mt-5">
+
+  <div class="row justify-content-center">
+
+    <div class="col-md-6">
+
+      <div class="card p-4 shadow">
+
+        <h2 class="text-center mb-4">
+          Login
+        </h2>
+
+        <input
+          type="email"
+          class="form-control mb-3"
+          placeholder="Enter Email"
+          [(ngModel)]="formData.email"
+          name="email"
+        />
+
+        <input
+          type="password"
+          class="form-control mb-3"
+          placeholder="Enter Password"
+          [(ngModel)]="formData.password"
+          name="password"
+        />
+
+        <button
+          class="btn btn-primary w-100"
+          (click)="login()">
+
+          Login
+
+        </button>
+
+        <div class="text-center mt-3">
+
+          Don't have account?
+
+          <a routerLink="/register">
+            Register
+          </a>
+
+        </div>
+
+        <p
+          class="text-danger text-center mt-3"
+          *ngIf="errorMessage">
+
+          {{ errorMessage }}
+
+        </p>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

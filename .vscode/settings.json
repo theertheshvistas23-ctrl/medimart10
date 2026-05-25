@@ -1,3 +1,8 @@
 {
-    "java.configuration.updateBuildConfiguration": "interactive"
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "java.debug.settings.onBuildFailureProceed": true,
+    "chat.tools.terminal.autoApprove": {
+        ".\\mvnw.cmd": true,
+        "Rename-Item": true
+    }
 }
